@@ -121,12 +121,12 @@ fn main() {
             0b1100 => memory[regs[a] as usize + b as usize] = regs[c],
             0b1101 => {
                 if regs[a] == regs[b] {
-                    regs[PC] += regs[c]
+                    regs[PC] = regs[c]
                 }
             }
             0b1110 => {
                 if regs[a] < regs[b] {
-                    regs[PC] += regs[c]
+                    regs[PC] = regs[c]
                 }
             }
             0b1111 => break,
