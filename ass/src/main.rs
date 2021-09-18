@@ -49,10 +49,10 @@ fn main() {
             continue; // shortest instruction is 2 chars
         }
 
-        nlines.push(line.to_owned());
         if line.ends_with(":") {
-            labels.insert(line.trim_end_matches(";").to_owned(), offset);
+            labels.insert(line.trim_end_matches(":").to_owned(), offset);
         } else {
+            nlines.push(line.to_owned());
             offset += 1;
             for double in doubles {
                 if line.starts_with(double) {
@@ -81,6 +81,7 @@ fn main() {
         ("ror", 0b0101_0101),
         ("not", 0b0101_0110),
         ("neg", 0b0101_0111),
+        ("out", 0b0101_1001),
         ("or", 0b0110 << 4),
         ("xor", 0b0111 << 4),
         ("and", 0b1000 << 4),
@@ -125,21 +126,21 @@ fn main() {
                     code.push(0b0101_1000);
                     code.push(arg_to_bin(args[1]));
                     let data = args[0].parse::<u16>().unwrap();
-                    code.push((data & 0xff00) as u8);
+                    code.push((data >> 8) as u8);
                     code.push((data & 0xff) as u8);
                 }
                 "jmp" => {
                     code.push(0b0101_1000);
                     code.push(0b0000_1111);
                     let data = labels.get(args[0]).unwrap();
-                    code.push((data & 0xff00) as u8);
+                    code.push((data >> 8) as u8);
                     code.push((data & 0xff) as u8);
                 }
                 "beq" => {
                     code.push(0b0101_1000);
                     code.push(0b0000_1110); // temp reg 14
                     let data = labels.get(args[2]).unwrap();
-                    code.push((data & 0xff00) as u8); // imm label address
+                    code.push((data >> 8) as u8); // imm label address
                     code.push((data & 0xff) as u8);
                     code.push((0b1101 << 4) + arg_to_bin(args[0]));
                     code.push((arg_to_bin(args[1]) << 4) + 0b1110);
@@ -148,12 +149,12 @@ fn main() {
                     code.push(0b0101_1000);
                     code.push(0b0000_1110); // temp reg 14
                     let data = labels.get(args[2]).unwrap();
-                    code.push((data & 0xff00) as u8); // imm label address
+                    code.push((data >> 8) as u8); // imm label address
                     code.push((data & 0xff) as u8);
                     code.push((0b1110 << 4) + arg_to_bin(args[0]));
                     code.push((arg_to_bin(args[1]) << 4) + 0b1110); // temp reg 14
                 }
-                _ => panic!("unrecognised instruction"),
+                _ => panic!("unrecognised instruction {}", instr),
             }
         }
     }
