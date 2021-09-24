@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <link rel="stylesheet" data-name="vs/editor/editor.main" href="monaco/min/vs/editor/editor.main.css" />
+</head>
+
+<body>
+    <h2>QSIS-16</h2>
+    <button onclick="runCode()"> Submit </button>
+    <div id="editor" style="width:800px;height:400px;border:1px solid grey"></div>
+    <div id="output" style="overflow-y:scroll; height:400px; width: 200px; background:#e0e0e0"></div>
+
+    <script>
+        var require = { paths: { vs: 'monaco/min/vs' } };
+    </script>
+    <script src="monaco/min/vs/loader.js"></script>
+    <script src="monaco/min/vs/editor/editor.main.nls.js"></script>
+    <script src="monaco/min/vs/editor/editor.main.js"></script>
+
+    <script src="index.js"></script>
+</body>
+
+</html>

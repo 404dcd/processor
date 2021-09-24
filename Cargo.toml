@@ -1,2 +1,2 @@
 [workspace]
-members = ["ass", "emu"]
+members = ["ass", "emu", "web"]
