@@ -2,12 +2,14 @@
 
 const PC: usize = 15;
 
-pub fn execute(memory: &mut Vec<u16>, lim: u64) -> (Vec<u16>, String) {
+pub fn execute(memory: &mut Vec<u16>, lim: u64) -> Result<(Vec<u16>, String), String> {
     let mut out: String = "".to_owned();
     let mut regs = vec![0u16; 16];
     let mut count: u64 = 0;
     loop {
-        let mut instr = memory[regs[PC] as usize];
+        let mut instr = *memory.get(regs[PC] as usize).ok_or_else(|| {
+            format!("couldn't fetch instr {}, len is {}", regs[PC], memory.len(),)
+        })?;
         count += 1;
         if count > lim && lim != 0 {
             out.push_str("## Timeout");
@@ -26,8 +28,18 @@ pub fn execute(memory: &mut Vec<u16>, lim: u64) -> (Vec<u16>, String) {
             0b0000 => regs[c] = regs[a] + regs[b],
             0b0001 => regs[c] = regs[a] * regs[b],
             0b0010 => regs[c] = ((regs[a] as u32 * regs[b] as u32) >> 16) as u16,
-            0b0011 => regs[c] = regs[a] / regs[b],
-            0b0100 => regs[c] = regs[a] % regs[b],
+            0b0011 => {
+                if regs[b] == 0 {
+                    return Err(format!("division by 0 at pc {}", regs[PC]));
+                }
+                regs[c] = regs[a] / regs[b]
+            }
+            0b0100 => {
+                if regs[b] == 0 {
+                    return Err(format!("mod by 0 at pc {}", regs[PC]));
+                }
+                regs[c] = regs[a] % regs[b]
+            }
             0b0101 => match a {
                 0b0000 => regs[c] += b as u16,
                 0b0001 => regs[c] -= b as u16,
@@ -38,20 +50,44 @@ pub fn execute(memory: &mut Vec<u16>, lim: u64) -> (Vec<u16>, String) {
                 0b0110 => regs[c] = !(c as u16),
                 0b0111 => regs[c] = !(c as u16) + 1,
                 0b1000 => {
-                    let read = memory[regs[PC] as usize];
+                    let read = memory.get(regs[PC] as usize).ok_or_else(|| {
+                        format!(
+                            "couldn't read address {} in IMM, len is {}",
+                            regs[PC],
+                            memory.len()
+                        )
+                    })?;
                     regs[PC] += 1;
-                    regs[c] = read;
+                    regs[c] = *read;
                 }
                 0b1001 => out.push_str(&format!("{}\n", regs[c])),
-                _ => panic!("unknown SRI opcode"),
+                _ => return Err("unknown SRI opcode".to_owned()),
             },
             0b0110 => regs[c] = regs[a] | regs[b],
             0b0111 => regs[c] = regs[a] ^ regs[b],
             0b1000 => regs[c] = regs[a] & regs[b],
             0b1001 => {}
             0b1010 => regs[c] = regs[b],
-            0b1011 => regs[c] = memory[regs[a] as usize + b as usize],
-            0b1100 => memory[regs[a] as usize + b as usize] = regs[c],
+            0b1011 => {
+                let memaddr = regs[a] as usize + b as usize;
+                regs[c] = *memory.get(memaddr).ok_or_else(|| {
+                    format!(
+                        "couldn't read address {} in LD, len is {}",
+                        memaddr,
+                        memory.len()
+                    )
+                })?
+            }
+            0b1100 => {
+                let memaddr = regs[a] as usize + b as usize;
+                let memlen = memory.len();
+                *memory.get_mut(memaddr).ok_or_else(|| {
+                    format!(
+                        "couldn't read address {} in STO, len is {}",
+                        memaddr, memlen
+                    )
+                })? = regs[c]
+            }
             0b1101 => {
                 if regs[a] == regs[b] {
                     regs[PC] = regs[c]
@@ -67,5 +103,5 @@ pub fn execute(memory: &mut Vec<u16>, lim: u64) -> (Vec<u16>, String) {
         }
         regs[0] = 0;
     }
-    (regs, out)
+    Ok((regs, out))
 }

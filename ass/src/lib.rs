@@ -1,23 +1,33 @@
 use std::collections::HashMap;
 
-fn arg_to_bin(arg: &str) -> u8 {
+fn arg_to_bin(arg: &str) -> Result<u8, String> {
     if arg == "$0" {
-        return 0;
+        return Ok(0);
     }
     if arg == "$pc" {
-        return 15;
+        return Ok(15);
     }
     if arg.starts_with("$") {
-        let ret: u8 = arg.bytes().last().unwrap() - 96;
-        assert!(ret >= 0b0001 && ret <= 0b1110);
-        return ret;
+        let ret: u8 = arg
+            .bytes()
+            .last()
+            .ok_or_else(|| "could not get last char of register")?
+            - 96;
+        if !(ret >= 0b0001 && ret <= 0b1110) {
+            return Err(format!("could not address letter register {}", arg));
+        }
+        return Ok(ret);
     }
-    let ret: u8 = arg.parse().unwrap();
-    assert!(ret <= 0b1111);
-    ret
+    let ret: u8 = arg
+        .parse()
+        .map_err(|e| format!("{}: '{}' in arg_to_bin", e, arg))?;
+    if !(ret <= 0b1111) {
+        return Err(format!("could not address register {}", ret));
+    }
+    Ok(ret)
 }
 
-pub fn assemble(program: Vec<String>) -> Vec<u8> {
+pub fn assemble(program: Vec<String>) -> Result<Vec<u8>, String> {
     let mut offset = 0u16;
     let mut labels: HashMap<String, u16> = HashMap::new();
 
@@ -89,66 +99,74 @@ pub fn assemble(program: Vec<String>) -> Vec<u8> {
 
     let mut code: Vec<u8> = Vec::new();
     for line in nlines {
-        let mut line = line.split_ascii_whitespace();
-        let instr = line.next().unwrap();
-        let mut args: Vec<&str> = line.collect();
+        let mut sline = line.split_ascii_whitespace();
+        let instr = sline.next().ok_or_else(|| "failed to load next instr")?;
+        let mut args: Vec<&str> = sline.collect();
         assert!(args.len() <= 3);
 
         if opcodes.contains_key(instr) {
-            let mut c = *opcodes.get(instr).unwrap();
+            let mut c = *opcodes.get(instr).ok_or_else(|| "lookup failure")?;
             if args.len() == 3 {
-                c += arg_to_bin(args[0]);
+                c += arg_to_bin(args[0])?;
                 args = args[1..].to_vec()
             }
             code.push(c);
 
             c = 0;
             if args.len() == 2 {
-                c += arg_to_bin(args[0]) << 4;
+                c += arg_to_bin(args[0])? << 4;
                 args = args[1..].to_vec()
             }
 
             if args.len() == 1 {
-                c += arg_to_bin(args[0])
+                c += arg_to_bin(args[0])?
             }
             code.push(c);
         } else {
             match instr {
                 "imm" => {
                     code.push(0b0101_1000);
-                    code.push(arg_to_bin(args[1]));
-                    let data = args[0].parse::<u16>().unwrap();
+                    code.push(arg_to_bin(args[1])?);
+                    let data = args[0]
+                        .parse::<u16>()
+                        .map_err(|e| format!("{}: '{}'", e, line))?;
                     code.push((data >> 8) as u8);
                     code.push((data & 0xff) as u8);
                 }
                 "jmp" => {
                     code.push(0b0101_1000);
                     code.push(0b0000_1111);
-                    let data = labels.get(args[0]).unwrap();
+                    let data = labels
+                        .get(args[0])
+                        .ok_or_else(|| format!("undefined label referenced: '{}'", line))?;
                     code.push((data >> 8) as u8);
                     code.push((data & 0xff) as u8);
                 }
                 "beq" => {
                     code.push(0b0101_1000);
                     code.push(0b0000_1110); // temp reg 14
-                    let data = labels.get(args[2]).unwrap();
+                    let data = labels
+                        .get(args[2])
+                        .ok_or_else(|| format!("undefined label referenced: '{}'", line))?;
                     code.push((data >> 8) as u8); // imm label address
                     code.push((data & 0xff) as u8);
-                    code.push((0b1101 << 4) + arg_to_bin(args[0]));
-                    code.push((arg_to_bin(args[1]) << 4) + 0b1110);
+                    code.push((0b1101 << 4) + arg_to_bin(args[0])?);
+                    code.push((arg_to_bin(args[1])? << 4) + 0b1110);
                 }
                 "blt" => {
                     code.push(0b0101_1000);
                     code.push(0b0000_1110); // temp reg 14
-                    let data = labels.get(args[2]).unwrap();
+                    let data = labels
+                        .get(args[2])
+                        .ok_or_else(|| format!("undefined label referenced: '{}'", line))?;
                     code.push((data >> 8) as u8); // imm label address
                     code.push((data & 0xff) as u8);
-                    code.push((0b1110 << 4) + arg_to_bin(args[0]));
-                    code.push((arg_to_bin(args[1]) << 4) + 0b1110); // temp reg 14
+                    code.push((0b1110 << 4) + arg_to_bin(args[0])?);
+                    code.push((arg_to_bin(args[1])? << 4) + 0b1110); // temp reg 14
                 }
-                _ => panic!("unrecognised instruction {}", instr),
+                _ => return Err(format!("unrecognised instruction {}", instr)),
             }
         }
     }
-    code
+    Ok(code)
 }

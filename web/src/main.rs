@@ -6,7 +6,10 @@ use rocket::fs::{relative, FileServer};
 
 #[post("/", data = "<program>")]
 fn run(program: &str) -> String {
-    let codeu8s = assemble(program.lines().map(|s| s.to_owned()).collect());
+    let codeu8s = match assemble(program.lines().map(|s| s.to_owned()).collect()) {
+        Ok(x) => x,
+        Err(y) => return y,
+    };
     let mut codeu16s: Vec<u16> = Vec::new();
 
     for ind in 0..codeu8s.len() {
@@ -17,7 +20,10 @@ fn run(program: &str) -> String {
         }
     }
 
-    execute(&mut codeu16s, 1_000_000).1
+    match execute(&mut codeu16s, 1_000_000) {
+        Ok(x) => x.1,
+        Err(y) => y,
+    }
 }
 
 #[launch]

@@ -1,16 +1,402 @@
 <!DOCTYPE html>
-<html>
+<html style="height: 100%; overflow:hidden;">
 
 <head>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <title>QSIS-16</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-F3w7mX95PdgyTmZZMECAngseQB83DfGTowi0iMjiWaeVhAn4FJkqJByhZMI3AhiU" crossorigin="anonymous">
     <link rel="stylesheet" data-name="vs/editor/editor.main" href="monaco/min/vs/editor/editor.main.css" />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-/bQdsTh/da6pkI1MST/rWKFNjaCP5gBSY4sEBT38Q/9RBh9AH40zEOg7Hlq2THRZ"
+        crossorigin="anonymous"></script>
+    <style>
+        body {
+            height: 100%;
+        }
+
+        code {
+            white-space: nowrap;
+        }
+
+        .instrs h2 {
+            margin-bottom: 0;
+        }
+    </style>
 </head>
 
 <body>
-    <h2>QSIS-16</h2>
-    <button onclick="runCode()"> Submit </button>
-    <div id="editor" style="width:800px;height:400px;border:1px solid grey"></div>
-    <div id="output" style="overflow-y:scroll; height:400px; width: 200px; background:#e0e0e0"></div>
+    <div class="container-fluid h-100">
+        <div class="row h-100">
+            <div class="col-6 mh-100 d-flex pe-0">
+                <div class="nav flex-column nav-pills pe-3 me-3 border-end border-3" id="v-pills-tab" role="tablist">
+                    <h2 class="text-nowrap text-center">QSIS-16</h2>
+                    <button class="nav-link active" id="v-pills-overview-tab" data-bs-toggle="pill"
+                        data-bs-target="#v-pills-overview" type="button" role="tab">Overview</button>
+                    <button class="nav-link" id="v-pills-specification-tab" data-bs-toggle="pill"
+                        data-bs-target="#v-pills-specification" type="button" role="tab">Specification</button>
+                    <button class="nav-link" id="v-pills-examples-tab" data-bs-toggle="pill"
+                        data-bs-target="#v-pills-examples" type="button" role="tab">Examples</button>
+                    <button class="nav-link" id="v-pills-advanced-tab" data-bs-toggle="pill"
+                        data-bs-target="#v-pills-advanced" type="button" role="tab">Advanced</button>
+                </div>
+                <div class="tab-content w-100" id="v-pills-tabContent" style="overflow-y: scroll;">
+                    <div class="tab-pane fade show active" id="v-pills-overview" role="tabpanel">
+                        <h1 class="text-center mt-3">The QSIS-16</h1>
+                        <p>The Quite Simple Instruction Set (16-bit) is an instruction set architechture for a custom
+                            reduced instruction set computer. It has a word size of 16 bits and is intentionally
+                            designed to be very limited in terms of the functionality the processor/assembler provides
+                            out of the box: its goal is to provoke computational thinking in reducing a problem down to
+                            this limited set of operations, with the set of operations themselves being easy to
+                            understand.</p>
+                        <h1 class="text-center mt-5">Interface</h1>
+                        <p>This web interface allows a user to write code that is then assembled and emulated by the
+                            server. It's written in Rust and uses Microsoft's
+                            <a href="https://microsoft.github.io/monaco-editor/">Monaco</a> editor, plus a bit of
+                            Javascript and HTML (using Bootstrap) to submit code to the server and display the various
+                            panels. This is the information panel, to the right is the code window and on the far right
+                            is the output. Have a go running the example program - it prints the prime numbers below
+                            100. Change the green number on line 2 to increase the upper limit it searches in. There is
+                            a limit on the number of instructions the processor will execute before it times out, and
+                            that is 1 million.
+                        </p>
+                        <h1 class="text-center mt-5">Challenge Ideas</h1>
+                        <ul>
+                            <li>Count from 1 to 10</li>
+                            <li>Output the powers of 2 below a limit</li>
+                            <li>Output the fibonacci numbers below a limit</li>
+                            <li>Print the first N square numbers</li>
+                            <li>Print the first N triangle numbers</li>
+                            <li>Find the integer square root of a given number</li>
+                            <li>Print the factors of a given number</li>
+                            <li>By copying the program counter, implement the concept of subroutines</li>
+                        </ul>
+                    </div>
+                    <div class="tab-pane fade instrs" id="v-pills-specification" role="tabpanel">
+                        <h1 class="text-center mt-3">Instructions</h1>
+                        <p>Instructions can have up to 3 parameters. If the parameter begins with a <code>$</code>, it
+                            requires a register so use a
+                            <code>$</code> followed by a register identifier. If there's no <code>$</code>, use a number
+                            between 0 and 15 inclusive - this is called an <abbr
+                                title="An instruction involving a number encoded directly into it - rather than specifying a register">
+                                immediate</abbr>.
+                            <br /><br />
+                            There are three types of registers that you can use:
+                        <ul>
+                            <li>General purpose: <code>$a</code>-<code>$m</code> inclusive. Like a variable.</li>
+                            <li>Zero register: <code>$0</code>. Always contains the value 0 and storing to it silently
+                                fails.</li>
+                            <li>Program counter: <code>$pc</code>. Contains the address of the next instruction to be
+                                executed.</li>
+                        </ul>
+                        </p>
+
+                        <h1 class="text-center mt-5">Arithmetic Operations</h1>
+                        <h2><code>add $x $y $z</code></h2>
+                        <code>$z = $x + $y</code>
+                        <p>Take the value in register X, add the value in register Y and store the result
+                            in register Z.
+                        </p>
+
+                        <h2><code>mul $x $y $z</code></h2>
+                        <code>$z = ($x * $y) & 0xffff</code>
+                        <p>Take the value in register X, multiply by the value in register Y and store the <abbr
+                                title="A 16 bit number multiplied by a 16 bit number can be 32 bits.">lower</abbr>
+                            16 bits of the result in register Z.
+                        </p>
+
+                        <h2><code>mulh $x $y $z</code></h2>
+                        <code>$z = ($x * $y) >> 16</code>
+                        <p>Take the value in register X, multiply by the value in register Y and store the upper 16 bits
+                            of the result in register Z.
+                        </p>
+
+                        <h2><code>div $x $y $z</code></h2>
+                        <code>$z = $x / $y</code>
+                        <p>Take the value in register X, integer divide by the value in register Y and store the result
+                            in register Z.
+                        </p>
+
+                        <h2><code>mod $x $y $z</code></h2>
+                        <code>$z = $x % $y</code>
+                        <p>Take the value in register X, divide by the value in register Y and store the remainder in
+                            register Z.
+                        </p>
+
+                        <h1 class="text-center mt-5">Immediate Arithmetic Operations</h1>
+                        <h2><code>addi y $z</code></h2>
+                        <code>$z += y</code>
+                        <p>Take the value in register Z and add the
+                            <abbr title="Use a value rather than a letter. 0-15 inclusive.">number</abbr> Y, storing in
+                            register Z.
+                        </p>
+
+                        <h2><code>subi y $z</code></h2>
+                        <code>$z += y</code>
+                        <p>Take the value in register Z and subtract the number Y, storing in register Z.
+                        </p>
+
+                        <h2><code>shl y $z</code></h2>
+                        <code>$z <<= y</code>
+                        <p>Take the value in register Z and
+                            <abbr title="Multiply by 2 raised to the power of Y">shift left</abbr> by the number Y,
+                            store back in register Z.
+                        </p>
+
+                        <h2><code>shr y $z</code></h2>
+                        <code>$z <<= y</code>
+                        <p>Take the value in register Z and shift right by the number Y, store back in register Z.
+                        </p>
+
+                        <h2><code>rol y $z</code></h2>
+                        <code>$z <<= y (rot)</code>
+                        <p>Take the value in register Z and
+                            <a href="https://en.wikipedia.org/wiki/Bitwise_operation#bit_rotation">rotate left</a> by
+                            the number Y, store back in register Z.
+                        </p>
+
+                        <h2><code>ror y $z</code></h2>
+                        <code>$z >>= y (rot)</code>
+                        <p>Take the value in register Z and rotate right by the number Y, storing in register Z.
+                        </p>
+
+                        <h2><code>neg $z</code></h2>
+                        <code>$z = (¬$z) + 1</code>
+                        <p>Perform a
+                            <a href="https://en.wikipedia.org/wiki/Two%27s_complement#Example">two's complement</a>
+                            negation of the value in register Z, storing in register Z.
+                        </p>
+
+                        <h1 class="text-center mt-5">Logical Operations</h1>
+                        <h2><code>or $x $y $z</code></h2>
+                        <code>$z = $x | $y</code>
+                        <p>Take the value in register X,
+                            <a href="https://en.wikipedia.org/wiki/Bitwise_operation#OR">bitwise OR</a> by the value in
+                            register Y and store the result in register Z.
+                        </p>
+
+                        <h2><code>xor $x $y $z</code></h2>
+                        <code>$z = $x ^ $y</code>
+                        <p>Take the value in register X, bitwise XOR by the value in register Y and store the result in
+                            register Z.
+                        </p>
+
+                        <h2><code>and $x $y $z</code></h2>
+                        <code>$z = $x & $y</code>
+                        <p>Take the value in register X, bitwise AND by the value in register Y and store the result in
+                            register Z.
+                        </p>
+
+                        <h2><code>not $z</code></h2>
+                        <code>$z = ¬$z</code>
+                        <p>Perform a bitwise NOT on the value of register Z and store the result in register Z.
+                        </p>
+
+                        <h1 class="text-center mt-5">Data Processing Operations</h1>
+                        <h2><code>ld $x $y $z</code></h2>
+                        <code>$z = MEM[$x + y]</code>
+                        <p>Add the value in register X to the number Y. Fetch the data at that address in memory and
+                            store in register Z.
+                        </p>
+
+                        <h2><code>sto $x $y $z</code></h2>
+                        <code>MEM[$x + y] = $z</code>
+                        <p>Add the value in register X to the number Y. Store the value of register Z at that address in
+                            memory.
+                        </p>
+
+                        <h2><code>imm y $z</code></h2>
+                        <code>$z = y</code>
+                        <p>Store the number Y in register Z. <b>Important:</b> this instruction is an exception to the
+                            0-15 number requirement. Here, the number Y can be up to 16 bits (or 0-65535 inclusive).
+                        </p>
+
+                        <h2><code>mov $y $z</code></h2>
+                        <code>$z = $y</code>
+                        <p>Copy the value in register Y to register Z.
+                        </p>
+
+                        <h2><code>out $z</code></h2>
+                        <code>print(Itoa($z))</code>
+                        <p>Print out the value in register Z as a number.
+                        </p>
+
+                        <h1 class="text-center mt-5">Control Flow Operations</h1>
+                        <h2><code>nop</code></h2>
+                        <code>{}</code>
+                        <p>Do nothing (reserved for future use).
+                        </p>
+
+                        <h2><code>hlt</code></h2>
+                        <code>exit()</code>
+                        <p>Halt execution, end the program.
+                        </p>
+
+                        <h2><code>beq $x $y [label]</code></h2>
+                        <code>if ($x == $y) $pc = [label]</code>
+                        <p>If the value in register X is equal to the value in register Y, jump to the label specified
+                            and continue the program from there.
+                        </p>
+
+                        <h2><code>blt $x $y [label]</code></h2>
+                        <code>if ($x < $y) $pc = [label]</code>
+                        <p>If the value in register X is less than the value in register Y, jump to the label specified
+                            and continue the program from there.
+                        </p>
+
+                        <h2><code>jmp [label]</code></h2>
+                        <code>$pc = [label]</code>
+                        <p>Jump to the label specified and continue the program from there.
+                        </p>
+
+                        <h1 class="text-center mt-5">Labels</h1>
+                        <p>A label is a human-readable address of a particular instruction. You can code a label like
+                            this: <code>.[label]:</code> on its own line, directly before the instruction you want to
+                            label. When the program is assembled, the assembler will replace the label with the address
+                            of that particular instruction. This way, you can jump to a point in a program without
+                            having to calculate the address it will end up at: just use the label. For example:<br />
+                            <code>.loop:</code><br />
+                            <code>&nbsp;&nbsp;nop</code><br />
+                            <code>&nbsp;&nbsp;jmp loop</code><br />
+                            Is an infinite loop. Note that whitespace is ignored, but adding a tab before instructions
+                            looks better.
+                        </p>
+                    </div>
+                    <div class="tab-pane fade" id="v-pills-examples" role="tabpanel">
+                        <h1 class="text-center mt-3">5 plus 3</h1>
+                        <ol>
+                            <li><code>&nbsp;&nbsp;imm 5 $a</code></li>
+                            <li><code>&nbsp;&nbsp;imm 3 $b</code></li>
+                            <li><code>&nbsp;&nbsp;add $a $b $c</code></li>
+                            <li><code>&nbsp;&nbsp;sto $pc 1 $c</code></li>
+                            <li><code>&nbsp;&nbsp;hlt</code></li>
+                            <li><code>&nbsp;&nbsp;nop</code></li>
+                        </ol>
+                        <p>First, we load the value 5 into register A and the value 3 into register B. On line 3, we
+                            take the value in register A and add it to the value in register B, storing the result
+                            (which happens to be 8) in register C. Then, we store the value in register C in the memory
+                            address <code>$pc + 1</code> (which is on line 6, as the $pc will point to line 5 as it's
+                            the next instruction to be executed). Finally, we stop execution. If we were to examine the
+                            memory after this program has been run, we'd find that line 6 <b>wouldn't</b> contain the
+                            code for a <code>nop</code>: it would contain the value 8.
+                        </p>
+
+                        <h1 class="text-center mt-5">Zeta's prime finder</h1>
+                        <ol>
+                            <li><code>&nbsp;&nbsp;imm 3 $a</code></li>
+                            <li><code>&nbsp;&nbsp;imm 2 $b</code></li>
+                            <li><code>&nbsp;&nbsp;imm 0 $c</code></li>
+                            <li><code>&nbsp;&nbsp;imm 100 $e</code></li>
+                            <li><code>&nbsp;&nbsp;out $b</code><br />
+                                <code>.testprm:</code>
+                            </li>
+                            <li><code>&nbsp;&nbsp;mod $a $b $d</code></li>
+                            <li><code>&nbsp;&nbsp;beq $d $0 newprm</code></li>
+                            <li><code>&nbsp;&nbsp;addi 1 $b</code></li>
+                            <li><code>&nbsp;&nbsp;beq $a $b outprm</code></li>
+                            <li><code>&nbsp;&nbsp;jmp testprm</code><br />
+                                <code>.outprm:</code>
+                            </li>
+                            <li><code>&nbsp;&nbsp;out $a</code><br />
+                                <code>.newprm:</code>
+                            </li>
+                            <li><code>&nbsp;&nbsp;addi 1 $a</code></li>
+                            <li><code>&nbsp;&nbsp;imm 2 $b</code></li>
+                            <li><code>&nbsp;&nbsp;blt $a $e testprm</code></li>
+                            <li><code>&nbsp;&nbsp;hlt</code></li>
+                        </ol>
+                        <p>First, we load some values into various registers. A contains 3, B contains 2, C contains 0
+                            (although registers always start at 0) and E contains 100. We output the value of B so the
+                            first line of output is the nuber 2, our first prime.
+                            <br />
+                            We now enter the <code>testprm</code> routine. We take the value in A and divide it by the
+                            value in B, storing the remainder in D. In this routine, A is the prime number candidate
+                            we're testing and B will have all the numbers we test it with. If any of those numbers
+                            wholly divide A, then A must not be a prime. Therefore, on line 7, if the remainder was 0
+                            (if D is equal to the zero register) we jump to the <code>newprm</code> routine. If this
+                            wasn't the case, we're just going to continue on to line 8 and add the value 1 to B (the
+                            number we check with).
+                            <br />
+                            However, if the number we check with is now equal to the number we're
+                            checking (line 9: A == B) we know we have a prime number: if it had factors we would have
+                            broken out of this <code>testprm</code> loop before using line 7. So we can jump to the
+                            <code>outprm</code> routine. If not, we have to keep checking with the new value of B so we
+                            jump back to <code>testprm</code>.
+                            <br />
+                            The <code>outprm</code> routine simply outputs the prime number candidate in A. It then
+                            continues to line 12 and into the <code>newprm</code> routine (labels don't stop programs
+                            from continuing to execute), where we add the value 1 to A: we're now testing the next
+                            number up to see if it's prime. We reset B to 2 and we go back to <code>testprm</code> if
+                            our new prime number candidate is lower than our limit in E. If it's not lower, then the
+                            processor
+                            halt.
+                            <br />
+                            <b>Note:</b> This is the same algorithm as the default program loaded in the code editor,
+                            but implemented in a more concise way.
+                        </p>
+
+                    </div>
+                    <div class="tab-pane fade" id="v-pills-advanced" role="tabpanel">
+                        <h1 class="text-center mt-3">Notes</h1>
+                        <p>
+                            The <code>imm</code> instruction is double width to allow a full 16 bit value to be loaded
+                            into a register. <code>beq</code>, <code>blt</code> and <code>jmp</code> are technically
+                            pseudo-instructions provided by the assembler: <code>jmp</code> is an <code>imm</code> into
+                            the <code>$pc</code> and the two branches are actually two instructions each: an
+                            <code>imm</code> into a temporary register (it's <code>$n</code> which I haven't said you
+                            can use, explore it if you want) followed by the branch instruction which is like a
+                            conditional <code>mov</code> into the <code>$pc</code>.
+                            <br />
+                            <br />
+                            Source code is available on <a href="https://github.com/404dcd/processor">GitHub</a>, where
+                            you can also download assembler and emulator binaries. Briefly, the assembler takes a
+                            filename and writes a machine code file called <code>a.out</code>, and the emulator takes a
+                            file name of the machine code file to run and writes to stdout. Additional debugging output
+                            is provided such as memory and register dumps.
+                        </p>
+                        <h1 class="text-center mt-5">Next steps</h1>
+                        <p>
+                        <ul>
+                            <li>Better debugging messages</li>
+                            <li>Separation of program output to debug messages</li>
+                            <li>Ability to take input</li>
+                            <li>Ability to address memory outside of program binary</li>
+                            <li>More assembler directives like storing data</li>
+                            <li>Assembler to set up a stack and offer pop/push/ret/jsr instructions</li>
+                            <li>Printing null-terminated ASCII strings in memory</li>
+                            <li>Nicer website design including dark theme</li>
+                            <li>Assemble and emulate in WASM</li>
+                        </ul>
+                        </p>
+                        <h1 class="text-center mt-5">Not next steps</h1>
+                        <p>
+                        <ul>
+                            <li>Increase word size: there's a good challenge in making programs work with this small
+                                constraint</li>
+                            <li>Floating point operations: keep it simple. User can code them if they wish</li>
+                            <li>Threading: I want this to stay close to von Neumann</li>
+                            <li>Breadboard version: it would be cool, but money doesn't grow on trees</li>
+                            <li><code>X86 $a $b</code>: I'm sorry Dave, I'm afraid I can't do that</li>
+                        </ul>
+                        </p>
+                        <br />
+                        <p>Thank you to my long-suffering friends in CD who put up with my stupid web development
+                            questions.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="editor" class="col-4 mh-100 border-start border-2 border-secondary"></div>
+
+            <div class="col-2 mh-100 d-flex flex-column pe-0">
+                <div class="d-flex justify-content-center">
+                    <button class="btn btn-primary mx-1" onclick="runCode()">Run code</button>
+                    <button class="btn btn-primary mx-1" onclick="saveCode()">Save</button>
+                </div>
+                <div id="output" class="flex-fill" style="overflow-y:scroll; background:#e0e0e0"></div>
+            </div>
+        </div>
+    </div>
 
     <script>
         var require = { paths: { vs: 'monaco/min/vs' } };

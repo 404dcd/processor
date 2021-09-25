@@ -57,9 +57,10 @@ monaco.editor.defineTheme('qsis16-theme', {
 window.editor = monaco.editor.create(document.getElementById("editor"), {
     theme: 'qsis16-theme',
     value: `    imm 2 $a
-    imm 1000 $k
+    imm 97 $k
     out $a
-    subi 1 $a
+    addi 1 $a
+    out $a
 .newprm: ; outer loop
     addi 2 $a
     imm 3 $i
@@ -88,4 +89,15 @@ async function runCode() {
     })
     const text = await res.text();
     document.getElementById("output").innerText = text;
-}
+};
+
+function saveCode() {
+    const a = document.createElement('a');
+    const file = new Blob([window.editor.getValue()], { type: 'text/plain' });
+
+    a.href = URL.createObjectURL(file);
+    a.download = 'code.asm';
+    a.click();
+
+    URL.revokeObjectURL(a.href);
+};

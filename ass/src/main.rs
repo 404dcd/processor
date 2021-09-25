@@ -14,7 +14,7 @@ fn main() {
     .expect("no such file");
     let buf = BufReader::new(file);
 
-    let code = assemble(buf.lines().map(|s| s.unwrap()).collect());
+    let code = assemble(buf.lines().map(|s| s.unwrap()).collect()).unwrap();
 
     let mut out = File::create("a.out").unwrap();
     out.write_all(&code).unwrap();

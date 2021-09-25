@@ -86,7 +86,7 @@ fn main() {
     dump_mem(&memory);
     println!("\n## BEGIN EXECUTION ##");
 
-    let (regs, out) = execute(&mut memory, 0);
+    let (regs, out) = execute(&mut memory, 0).unwrap();
 
     println!("{}", out);
 
