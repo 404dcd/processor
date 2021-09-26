@@ -1,2 +1,5 @@
 [workspace]
 members = ["ass", "emu", "web"]
+
+[profile.dev]
+overflow-checks = false

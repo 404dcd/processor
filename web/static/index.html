@@ -39,11 +39,13 @@
                         data-bs-target="#v-pills-examples" type="button" role="tab">Examples</button>
                     <button class="nav-link" id="v-pills-advanced-tab" data-bs-toggle="pill"
                         data-bs-target="#v-pills-advanced" type="button" role="tab">Advanced</button>
+                    <button class="nav-link" id="v-pills-changelog-tab" data-bs-toggle="pill"
+                        data-bs-target="#v-pills-changelog" type="button" role="tab">Changelog</button>
                 </div>
                 <div class="tab-content w-100" id="v-pills-tabContent" style="overflow-y: scroll;">
                     <div class="tab-pane fade show active" id="v-pills-overview" role="tabpanel">
                         <h1 class="text-center mt-3">The QSIS-16</h1>
-                        <p>The Quite Simple Instruction Set (16-bit) is an instruction set architechture for a custom
+                        <p>The Quite Simple Instruction Set (16-bit) is an instruction set architecture for a custom
                             reduced instruction set computer. It has a word size of 16 bits and is intentionally
                             designed to be very limited in terms of the functionality the processor/assembler provides
                             out of the box: its goal is to provoke computational thinking in reducing a problem down to
@@ -53,7 +55,7 @@
                         <p>This web interface allows a user to write code that is then assembled and emulated by the
                             server. It's written in Rust and uses Microsoft's
                             <a href="https://microsoft.github.io/monaco-editor/">Monaco</a> editor, plus a bit of
-                            Javascript and HTML (using Bootstrap) to submit code to the server and display the various
+                            JavaScript and HTML (using Bootstrap) to submit code to the server and display the various
                             panels. This is the information panel, to the right is the code window and on the far right
                             is the output. Have a go running the example program - it prints the prime numbers below
                             100. Change the green number on line 2 to increase the upper limit it searches in. There is
@@ -64,7 +66,7 @@
                         <ul>
                             <li>Count from 1 to 10</li>
                             <li>Output the powers of 2 below a limit</li>
-                            <li>Output the fibonacci numbers below a limit</li>
+                            <li>Output the Fibonacci numbers below a limit</li>
                             <li>Print the first N square numbers</li>
                             <li>Print the first N triangle numbers</li>
                             <li>Find the integer square root of a given number</li>
@@ -193,13 +195,13 @@
                         </p>
 
                         <h1 class="text-center mt-5">Data Processing Operations</h1>
-                        <h2><code>ld $x $y $z</code></h2>
+                        <h2><code>ld $x y $z</code></h2>
                         <code>$z = MEM[$x + y]</code>
                         <p>Add the value in register X to the number Y. Fetch the data at that address in memory and
                             store in register Z.
                         </p>
 
-                        <h2><code>sto $x $y $z</code></h2>
+                        <h2><code>sto $x y $z</code></h2>
                         <code>MEM[$x + y] = $z</code>
                         <p>Add the value in register X to the number Y. Store the value of register Z at that address in
                             memory.
@@ -258,7 +260,7 @@
                             <code>.loop:</code><br />
                             <code>&nbsp;&nbsp;nop</code><br />
                             <code>&nbsp;&nbsp;jmp loop</code><br />
-                            Is an infinite loop. Note that whitespace is ignored, but adding a tab before instructions
+                            Is an infinite loop. Note that whitespace is ignored but adding a tab before instructions
                             looks better.
                         </p>
                     </div>
@@ -360,7 +362,6 @@
                             <li>Better debugging messages</li>
                             <li>Separation of program output to debug messages</li>
                             <li>Ability to take input</li>
-                            <li>Ability to address memory outside of program binary</li>
                             <li>More assembler directives like storing data</li>
                             <li>Assembler to set up a stack and offer pop/push/ret/jsr instructions</li>
                             <li>Printing null-terminated ASCII strings in memory</li>
@@ -382,6 +383,22 @@
                         <br />
                         <p>Thank you to my long-suffering friends in CD who put up with my stupid web development
                             questions.</p>
+                    </div>
+
+                    <div class="tab-pane fade" id="v-pills-changelog" role="tabpanel">
+                        <h1 class="text-center mt-3">0.2.0</h1>
+                        <p>
+                        <ul>
+                            <li><b>Major:</b> Allows addressing of memory outside of code section, up to 0xFFFF</li>
+                            <li><b>Major:</b> Allows <code>imm</code> instruction to take a label as the value</li>
+                            <li>Enforces labels being non-numeric</li>
+                            <li>Improves error messages</li>
+                            <li>Adds Changelog section</li>
+                            <li>Fixes typos and grammatical errors</li>
+                        </ul>
+                        </p>
+                        <h1 class="text-center mt-5">0.1.0</h1>
+                        <p>Initial release.</p>
                     </div>
                 </div>
             </div>

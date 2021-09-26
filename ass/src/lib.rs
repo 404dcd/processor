@@ -22,7 +22,7 @@ fn arg_to_bin(arg: &str) -> Result<u8, String> {
         .parse()
         .map_err(|e| format!("{}: '{}' in arg_to_bin", e, arg))?;
     if !(ret <= 0b1111) {
-        return Err(format!("could not address register {}", ret));
+        return Err(format!("could not use arg '{}' as 4 bits", ret));
     }
     Ok(ret)
 }
@@ -46,13 +46,12 @@ pub fn assemble(program: Vec<String>) -> Result<Vec<u8>, String> {
             continue; // shortest instruction is 2 chars
         }
 
-        if line.ends_with(":") {
-            labels.insert(
-                line.trim_end_matches(":")
-                    .trim_start_matches(".")
-                    .to_owned(),
-                offset,
-            );
+        if line.ends_with(":") && line.starts_with(".") {
+            let lbl = line.trim_end_matches(":").trim_start_matches(".").trim();
+            if lbl.parse::<f64>().is_ok() {
+                return Err(format!("label '{}' cannot be number", lbl));
+            }
+            labels.insert(lbl.to_owned(), offset);
         } else {
             nlines.push(line.to_owned());
             offset += 1;
@@ -100,7 +99,7 @@ pub fn assemble(program: Vec<String>) -> Result<Vec<u8>, String> {
     let mut code: Vec<u8> = Vec::new();
     for line in nlines {
         let mut sline = line.split_ascii_whitespace();
-        let instr = sline.next().ok_or_else(|| "failed to load next instr")?;
+        let instr = sline.next().ok_or_else(|| "failed to iter next line")?;
         let mut args: Vec<&str> = sline.collect();
         assert!(args.len() <= 3);
 
@@ -127,9 +126,12 @@ pub fn assemble(program: Vec<String>) -> Result<Vec<u8>, String> {
                 "imm" => {
                     code.push(0b0101_1000);
                     code.push(arg_to_bin(args[1])?);
-                    let data = args[0]
-                        .parse::<u16>()
-                        .map_err(|e| format!("{}: '{}'", e, line))?;
+                    let data: u16;
+                    if let Some(x) = labels.get(args[0]) {
+                        data = *x
+                    } else {
+                        data = args[0].parse().map_err(|e| format!("{}: '{}'", e, line))?;
+                    }
                     code.push((data >> 8) as u8);
                     code.push((data & 0xff) as u8);
                 }

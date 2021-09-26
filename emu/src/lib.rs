@@ -10,12 +10,12 @@ pub fn execute(memory: &mut Vec<u16>, lim: u64) -> Result<(Vec<u16>, String), St
         let mut instr = *memory.get(regs[PC] as usize).ok_or_else(|| {
             format!("couldn't fetch instr {}, len is {}", regs[PC], memory.len(),)
         })?;
+        regs[PC] += 1;
         count += 1;
         if count > lim && lim != 0 {
             out.push_str("## Timeout");
             break;
         }
-        regs[PC] += 1;
         let c = (instr & 0b1111) as usize;
         instr >>= 4;
         let b = (instr & 0b1111) as usize;
@@ -50,13 +50,7 @@ pub fn execute(memory: &mut Vec<u16>, lim: u64) -> Result<(Vec<u16>, String), St
                 0b0110 => regs[c] = !(c as u16),
                 0b0111 => regs[c] = !(c as u16) + 1,
                 0b1000 => {
-                    let read = memory.get(regs[PC] as usize).ok_or_else(|| {
-                        format!(
-                            "couldn't read address {} in IMM, len is {}",
-                            regs[PC],
-                            memory.len()
-                        )
-                    })?;
+                    let read = memory.get(regs[PC] as usize).unwrap_or(&0);
                     regs[PC] += 1;
                     regs[c] = *read;
                 }
@@ -68,25 +62,13 @@ pub fn execute(memory: &mut Vec<u16>, lim: u64) -> Result<(Vec<u16>, String), St
             0b1000 => regs[c] = regs[a] & regs[b],
             0b1001 => {}
             0b1010 => regs[c] = regs[b],
-            0b1011 => {
-                let memaddr = regs[a] as usize + b as usize;
-                regs[c] = *memory.get(memaddr).ok_or_else(|| {
-                    format!(
-                        "couldn't read address {} in LD, len is {}",
-                        memaddr,
-                        memory.len()
-                    )
-                })?
-            }
+            0b1011 => regs[c] = *memory.get(regs[a] as usize + b as usize).unwrap_or(&0),
             0b1100 => {
                 let memaddr = regs[a] as usize + b as usize;
-                let memlen = memory.len();
-                *memory.get_mut(memaddr).ok_or_else(|| {
-                    format!(
-                        "couldn't read address {} in STO, len is {}",
-                        memaddr, memlen
-                    )
-                })? = regs[c]
+                if memory.len() <= memaddr {
+                    memory.reserve((memaddr - memory.len()) + 1)
+                }
+                memory[memaddr] = regs[c]
             }
             0b1101 => {
                 if regs[a] == regs[b] {

@@ -21,7 +21,15 @@ fn run(program: &str) -> String {
     }
 
     match execute(&mut codeu16s, 1_000_000) {
-        Ok(x) => x.1,
+        Ok(x) => {
+            if x.1.len() > 10_000 {
+                let mut ret = x.1[..10_000].to_string();
+                ret.push_str("\n## Output trimmed");
+                ret
+            } else {
+                x.1
+            }
+        }
         Err(y) => y,
     }
 }
