@@ -2,13 +2,15 @@
 
 const PC: usize = 15;
 
-pub fn execute(memory: &mut Vec<u16>, lim: u64) -> Result<(Vec<u16>, String), String> {
+pub fn execute(instructions: &[u16], lim: u64) -> Result<(Vec<u16>, String), String> {
     let mut out: String = "".to_owned();
     let mut regs = vec![0u16; 16];
+    let mut mem: Vec<u16> = vec![0; 0xFFFF];
     let mut count: u64 = 0;
+
     loop {
-        let mut instr = *memory.get(regs[PC] as usize).ok_or_else(|| {
-            format!("couldn't fetch instr {}, len is {}", regs[PC], memory.len(),)
+        let mut instr = *instructions.get(regs[PC] as usize).ok_or_else(|| {
+            format!("couldn't fetch instr {}, len is {}", regs[PC], instructions.len(),)
         })?;
         count += 1;
         if count > lim && lim != 0 {
@@ -50,11 +52,11 @@ pub fn execute(memory: &mut Vec<u16>, lim: u64) -> Result<(Vec<u16>, String), St
                 0b0110 => regs[c] = !(c as u16),
                 0b0111 => regs[c] = !(c as u16) + 1,
                 0b1000 => {
-                    let read = memory.get(regs[PC] as usize).ok_or_else(|| {
+                    let read = instructions.get(regs[PC] as usize).ok_or_else(|| {
                         format!(
                             "couldn't read address {} in IMM, len is {}",
                             regs[PC],
-                            memory.len()
+                            instructions.len()
                         )
                     })?;
                     regs[PC] += 1;
@@ -70,18 +72,18 @@ pub fn execute(memory: &mut Vec<u16>, lim: u64) -> Result<(Vec<u16>, String), St
             0b1010 => regs[c] = regs[b],
             0b1011 => {
                 let memaddr = regs[a] as usize + b as usize;
-                regs[c] = *memory.get(memaddr).ok_or_else(|| {
+                regs[c] = *mem.get(memaddr).ok_or_else(|| {
                     format!(
                         "couldn't read address {} in LD, len is {}",
                         memaddr,
-                        memory.len()
+                        mem.len()
                     )
                 })?
             }
             0b1100 => {
                 let memaddr = regs[a] as usize + b as usize;
-                let memlen = memory.len();
-                *memory.get_mut(memaddr).ok_or_else(|| {
+                let memlen = mem.len();
+                *instructions.get_mut(memaddr).ok_or_else(|| {
                     format!(
                         "couldn't read address {} in STO, len is {}",
                         memaddr, memlen
