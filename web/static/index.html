@@ -210,7 +210,8 @@
                         <h2><code>imm y $z</code></h2>
                         <code>$z = y</code>
                         <p>Store the number Y in register Z. <b>Important:</b> this instruction is an exception to the
-                            0-15 number requirement. Here, the number Y can be up to 16 bits (or 0-65535 inclusive).
+                            0-15 number requirement. Here, the number Y can be up to 16 bits (or 0-65535 inclusive) OR
+                            it can be a label, in which case the address of the label will be stored.
                         </p>
 
                         <h2><code>mov $y $z</code></h2>
