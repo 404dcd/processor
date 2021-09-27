@@ -66,7 +66,7 @@ pub fn execute(memory: &mut Vec<u16>, lim: u64) -> Result<(Vec<u16>, String), St
             0b1100 => {
                 let memaddr = regs[a] as usize + b as usize;
                 if memory.len() <= memaddr {
-                    memory.reserve((memaddr - memory.len()) + 1)
+                    memory.resize(memaddr + 1, 0)
                 }
                 memory[memaddr] = regs[c]
             }

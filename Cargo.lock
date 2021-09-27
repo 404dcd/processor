@@ -4,7 +4,7 @@ version = 3
 
 [[package]]
 name = "ass"
-version = "0.1.0"
+version = "0.2.1"
 
 [[package]]
 name = "async-stream"
@@ -170,7 +170,7 @@ checksum = "e78d4f1cc4ae33bbfc157ed5d5a5ef3bc29227303d595861deb238fcec4e9457"
 
 [[package]]
 name = "emu"
-version = "0.1.0"
+version = "0.2.1"
 
 [[package]]
 name = "encoding_rs"
@@ -1322,7 +1322,7 @@ checksum = "0237232789cf037d5480773fe568aac745bfe2afbc11a863e97901780a6b47cc"
 
 [[package]]
 name = "web"
-version = "0.1.0"
+version = "0.2.1"
 dependencies = [
  "ass",
  "emu",

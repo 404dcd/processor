@@ -338,6 +338,45 @@
                             but implemented in a more concise way.
                         </p>
 
+                        <h1 class="text-center mt-5">Nim's subroutine PoC</h1>
+                        <ol>
+                            <li><code>&nbsp;&nbsp;imm 81 $m</code></li>
+                            <li><code>&nbsp;&nbsp;mov $m $g</code></li>
+                            <li><code>&nbsp;&nbsp;mov $pc $f</code></li>
+                            <li><code>&nbsp;&nbsp;addi 2 $f</code></li>
+                            <li><code>&nbsp;&nbsp;jmp sqrt</code></li>
+                            <li><code>&nbsp;&nbsp;out $j</code></li>
+                            <li><code>&nbsp;&nbsp;hlt</code><br />
+                                <code>.sqrt:</code>
+                            </li>
+                            <li><code>&nbsp;&nbsp;imm 0 $h</code></li>
+                            <li><code>&nbsp;&nbsp;imm 1 $i</code></li>
+                            <li><code>&nbsp;&nbsp;imm 0 $j</code><br />
+                                <code>.loopsqrt:</code>
+                            </li>
+                            <li><code>&nbsp;&nbsp;add $h $i $h</code></li>
+                            <li><code>&nbsp;&nbsp;addi 2 $i</code></li>
+                            <li><code>&nbsp;&nbsp;addi 1 $j</code></li>
+                            <li><code>&nbsp;&nbsp;blt $h $g loopsqrt</code></li>
+                            <li><code>&nbsp;&nbsp;mov $f $pc</code></li>
+                        </ol>
+                        <p>The first line loads the value we want to square root into register M. Then, M is copied to G
+                            and the program counter is copied into register F. F is incremented by two to skip over the
+                            <code>jmp</code> instruction (since it is double width, see the Advanced tab): this program
+                            was made before v0.2.0 in which labels were added as a valid argument to immediate, so
+                            having to manually set the return pointer should not be needed. Then we jump to the
+                            <code>sqrt</code> label: which is our subroutine. We can consider the content of register G
+                            to be the argument to the subroutine - and on line 2 our input was indeed copied to register
+                            G. The content of F is the return pointer.
+                            <br /><br />
+                            In the subroutine <code>sqrt</code>, registers H = 0, I = 1 and J = 0. Then the
+                            <code>loopsqrt</code> section is entered: lines 12 and 13 create a sequence of the square
+                            numbers in register H and register J tracks the square root of H. If H is less than the
+                            number we want to square root we loop, otherwise the <b>stored address</b> is moved
+                            <b>back</b> into the program counter and execution continues. That jumps to line 6, we
+                            output the result, and halt.
+                        </p>
+
                     </div>
                     <div class="tab-pane fade" id="v-pills-advanced" role="tabpanel">
                         <h1 class="text-center mt-3">Notes</h1>
@@ -387,7 +426,17 @@
                     </div>
 
                     <div class="tab-pane fade" id="v-pills-changelog" role="tabpanel">
-                        <h1 class="text-center mt-3">0.2.0</h1>
+                        <h1 class="text-center mt-3">0.2.1</h1>
+                        <p>
+                        <ul>
+                            <li>Fixes errors when writing memory not yet initialised</li>
+                            <li>Adds to Examples section</li>
+                            <li>Updates <code>imm</code> description with label feature</li>
+                            <li>Repo fixes: make Rust Cargo files use this version, add README, stop using CRLF, add
+                                favicon</li>
+                        </ul>
+                        </p>
+                        <h1 class="text-center mt-4">0.2.0</h1>
                         <p>
                         <ul>
                             <li><b>Major:</b> Allows addressing of memory outside of code section, up to 0xFFFF</li>
@@ -398,7 +447,7 @@
                             <li>Fixes typos and grammatical errors</li>
                         </ul>
                         </p>
-                        <h1 class="text-center mt-5">0.1.0</h1>
+                        <h1 class="text-center mt-4">0.1.0</h1>
                         <p>Initial release.</p>
                     </div>
                 </div>
