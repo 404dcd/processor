@@ -22,6 +22,13 @@
         .instrs h2 {
             margin-bottom: 0;
         }
+
+        #output {
+            box-sizing: border-box;
+            padding: 0.5em;
+            overflow-y: scroll;
+            background: #e0e0e0
+        }
     </style>
 </head>
 
@@ -81,7 +88,9 @@
                             <code>$</code> followed by a register identifier. If there's no <code>$</code>, use a number
                             between 0 and 15 inclusive - this is called an <abbr
                                 title="An instruction involving a number encoded directly into it - rather than specifying a register">
-                                immediate</abbr>.
+                                immediate</abbr>. Such a number can be expressed using a series of digits: if prefixed
+                            by <code>0b</code> then they are treated as binary, if prefixed by <code>0x</code> they are
+                            treated as hexadecimal.
                             <br /><br />
                             There are three types of registers that you can use:
                         <ul>
@@ -395,6 +404,11 @@
                             filename and writes a machine code file called <code>a.out</code>, and the emulator takes a
                             file name of the machine code file to run and writes to stdout. Additional debugging output
                             is provided such as memory and register dumps.
+                            <br />
+                            <br />
+                            I've set an execution cap of 5 million cycles for running code online - there is no such
+                            limit if you run the emulator locally. Output is also trimmed online if it's longer than 10k
+                            characters.
                         </p>
                         <h1 class="text-center mt-5">Next steps</h1>
                         <p>
@@ -426,7 +440,17 @@
                     </div>
 
                     <div class="tab-pane fade" id="v-pills-changelog" role="tabpanel">
-                        <h1 class="text-center mt-3">0.2.1</h1>
+                        <h1 class="text-center mt-3">0.2.2</h1>
+                        <p>
+                        <ul>
+                            <li><b>Major:</b> Allows numerical values to be expressed using a prefix of <code>0b</code>
+                                for binary and <code>0x</code> for hexadecimal</li>
+                            <li>Adds dark theme</li>
+                            <li>Adds a button to load code from a file</li>
+                            <li>Increases execution cap to 5 million instructions</li>
+                        </ul>
+                        </p>
+                        <h1 class="text-center mt-4">0.2.1</h1>
                         <p>
                         <ul>
                             <li>Fixes errors when writing memory not yet initialised</li>
@@ -453,14 +477,16 @@
                 </div>
             </div>
 
-            <div id="editor" class="col-4 mh-100 border-start border-2 border-secondary"></div>
+            <div id="editor" class="col-4 mh-100 p-0 border-start border-2 border-secondary"></div>
 
-            <div class="col-2 mh-100 d-flex flex-column pe-0">
-                <div class="d-flex justify-content-center">
-                    <button class="btn btn-primary mx-1" onclick="runCode()">Run code</button>
-                    <button class="btn btn-primary mx-1" onclick="saveCode()">Save</button>
+            <div class="col-2 mh-100 d-flex flex-column p-0">
+                <div id="buttonBar" class="d-flex justify-content-center">
+                    <button id="themeTog" class="btn btn-outline-primary mx-auto" onclick="toggleTheme()">🌙</button>
+                    <button class="btn btn-primary mx-auto" onclick="runCode()">Run code</button>
+                    <button class="btn btn-primary mx-auto" onclick="saveCode()">Save</button>
+                    <button class="btn btn-primary mx-auto" onclick="loadCode()">Load</button>
                 </div>
-                <div id="output" class="flex-fill" style="overflow-y:scroll; background:#e0e0e0"></div>
+                <div id="output" class="flex-fill"></div>
             </div>
         </div>
     </div>

@@ -20,7 +20,7 @@ fn run(program: &str) -> String {
         }
     }
 
-    match execute(&mut codeu16s, 1_000_000) {
+    match execute(&mut codeu16s, 5_000_000) {
         Ok(x) => {
             if x.1.len() > 10_000 {
                 let mut ret = x.1[..10_000].to_string();

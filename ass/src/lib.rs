@@ -1,30 +1,38 @@
 use std::collections::HashMap;
 
+fn prs_string(arg: &str) -> Result<u16, String> {
+    Ok(if arg.starts_with("0b") {
+        u16::from_str_radix(arg.trim_start_matches("0b"), 2)
+    } else if arg.starts_with("0x") {
+        u16::from_str_radix(arg.trim_start_matches("0x"), 16)
+    } else {
+        arg.parse()
+    }
+    .map_err(|e| format!("{}: '{}' when converting number", e, arg))?)
+}
+
 fn arg_to_bin(arg: &str) -> Result<u8, String> {
-    if arg == "$0" {
-        return Ok(0);
-    }
-    if arg == "$pc" {
-        return Ok(15);
-    }
     if arg.starts_with("$") {
-        let ret: u8 = arg
-            .bytes()
-            .last()
-            .ok_or_else(|| "could not get last char of register")?
-            - 96;
-        if !(ret >= 0b0001 && ret <= 0b1110) {
-            return Err(format!("could not address letter register {}", arg));
-        }
-        return Ok(ret);
+        return match arg.trim_start_matches("$") {
+            "0" => Ok(0),
+            "pc" => Ok(15),
+            chrs => {
+                let ret = chrs.bytes().next().ok_or_else(|| "failure")? - 96;
+                if ret >= 0b0001 && ret <= 0b1101 {
+                    Ok(ret)
+                } else {
+                    Err(format!("could not address register {}", arg))
+                }
+            }
+        };
     }
-    let ret: u8 = arg
-        .parse()
-        .map_err(|e| format!("{}: '{}' in arg_to_bin", e, arg))?;
+
+    let ret = prs_string(arg)?;
+
     if !(ret <= 0b1111) {
         return Err(format!("could not use arg '{}' as 4 bits", ret));
     }
-    Ok(ret)
+    Ok(ret as u8)
 }
 
 pub fn assemble(program: Vec<String>) -> Result<Vec<u8>, String> {
@@ -48,7 +56,8 @@ pub fn assemble(program: Vec<String>) -> Result<Vec<u8>, String> {
 
         if line.ends_with(":") && line.starts_with(".") {
             let lbl = line.trim_end_matches(":").trim_start_matches(".").trim();
-            if lbl.parse::<f64>().is_ok() {
+            let test = lbl.chars().next();
+            if test.ok_or_else(|| "empty label")?.is_numeric() {
                 return Err(format!("label '{}' cannot be number", lbl));
             }
             labels.insert(lbl.to_owned(), offset);
@@ -130,7 +139,7 @@ pub fn assemble(program: Vec<String>) -> Result<Vec<u8>, String> {
                     if let Some(x) = labels.get(args[0]) {
                         data = *x
                     } else {
-                        data = args[0].parse().map_err(|e| format!("{}: '{}'", e, line))?;
+                        data = prs_string(args[0])?
                     }
                     code.push((data >> 8) as u8);
                     code.push((data & 0xff) as u8);
