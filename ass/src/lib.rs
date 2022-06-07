@@ -58,7 +58,7 @@ pub fn assemble(program: Vec<String>) -> Result<Vec<u8>, String> {
             let lbl = line.trim_end_matches(":").trim_start_matches(".").trim();
             let test = lbl.chars().next();
             if test.ok_or_else(|| "empty label")?.is_numeric() {
-                return Err(format!("label '{}' cannot be number", lbl));
+                return Err(format!("label '{}' cannot start with number", lbl));
             }
             labels.insert(lbl.to_owned(), offset);
         } else {

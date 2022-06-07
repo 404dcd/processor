@@ -60,7 +60,7 @@ monaco.editor.defineTheme('qsis16-theme-dark', {
     rules: [
         { token: 'instr', foreground: '4edde6' },
         { token: 'pcmod', foreground: '5cf6ff', fontStyle: 'bold' },
-        { token: 'reg', foreground: 'c34069' },
+        { token: 'reg', foreground: 'e04070' },
         { token: 'number', foreground: 'b796ff' },
         { token: 'comment', foreground: '828277', fontStyle: 'italic' },
         { token: 'label', foreground: 'e0e0e0', fontStyle: 'bold' },
@@ -69,7 +69,7 @@ monaco.editor.defineTheme('qsis16-theme-dark', {
 
 window.editor = monaco.editor.create(document.getElementById("editor"), {
     theme: 'qsis16-theme-light',
-    value: `    imm 2 $a
+    value: localStorage.getItem('code') ?? `    imm 2 $a
     imm 97 $k
     out $a
     addi 1 $a
@@ -93,6 +93,8 @@ window.editor = monaco.editor.create(document.getElementById("editor"), {
 
 
 async function runCode() {
+    const output = document.getElementById('output');
+    output.innerText = "Running...";
     const res = await fetch("/", {
         method: 'POST',
         headers: {
@@ -101,7 +103,7 @@ async function runCode() {
         body: window.editor.getValue()
     })
     const text = await res.text();
-    document.getElementById('output').innerText = text;
+    output.innerText = text;
 };
 
 function saveCode() {
@@ -125,17 +127,37 @@ function loadCode() {
     inp.click()
 }
 
-function toggleTheme() {
-    const toggle = document.getElementById('themeTog');
-    if (toggle.innerText === "🌙") {
+function setTheme(theme) {
+    if (theme === 'dark') {
         monaco.editor.setTheme('qsis16-theme-dark');
-        toggle.innerText = "☀️"
+        document.getElementById('themeTog').innerText = "☀️" // inverse
         document.getElementById('output').style = "background:#303030; color:#ffffff";
         document.getElementById('buttonBar').style = "background:#303030";
     } else {
         monaco.editor.setTheme('qsis16-theme-light');
-        toggle.innerText = "🌙";
+        document.getElementById('themeTog').innerText = "🌙";
         document.getElementById('output').style = "";
         document.getElementById('buttonBar').style = "";
     }
 }
+
+function toggleTheme() {
+    if (document.getElementById('themeTog').innerText === "🌙") {
+        setTheme('dark');
+        localStorage.setItem('theme', "dark");
+    } else {
+        setTheme('light');
+        localStorage.setItem('theme', "light");
+    }
+}
+
+document.onkeyup = function (e) {
+    if (e.key == 'Enter') {
+        localStorage.setItem("code", window.editor.getValue());
+        if (e.altKey) {
+            runCode();
+        }
+    }
+};
+
+setTheme(localStorage.getItem('theme'))

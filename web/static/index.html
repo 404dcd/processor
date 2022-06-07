@@ -65,9 +65,12 @@
                             JavaScript and HTML (using Bootstrap) to submit code to the server and display the various
                             panels. This is the information panel, to the right is the code window and on the far right
                             is the output. Have a go running the example program - it prints the prime numbers below
-                            100. Change the green number on line 2 to increase the upper limit it searches in. There is
-                            a limit on the number of instructions the processor will execute before it times out, and
-                            that is 1 million.
+                            100. Change the green number on line 2 to increase the upper limit it searches in.
+                            <br />
+                            <br />
+                            Code is autosaved so that when you return to the site you can pick up where you left off. Be
+                            sure to use the Save/Load file buttons for big projects, though. Toggle dark theme using the
+                            moon crescent button, and run code either with Alt+Enter or the button.
                         </p>
                         <h1 class="text-center mt-5">Challenge Ideas</h1>
                         <ul>
@@ -90,7 +93,7 @@
                                 title="An instruction involving a number encoded directly into it - rather than specifying a register">
                                 immediate</abbr>. Such a number can be expressed using a series of digits: if prefixed
                             by <code>0b</code> then they are treated as binary, if prefixed by <code>0x</code> they are
-                            treated as hexadecimal.
+                            treated as hexadecimal. Otherwise they're treated as a regular decimal number.
                             <br /><br />
                             There are three types of registers that you can use:
                         <ul>
@@ -419,7 +422,6 @@
                             <li>More assembler directives like storing data</li>
                             <li>Assembler to set up a stack and offer pop/push/ret/jsr instructions</li>
                             <li>Printing null-terminated ASCII strings in memory</li>
-                            <li>Nicer website design including dark theme</li>
                             <li>Assemble and emulate in WASM</li>
                         </ul>
                         </p>
@@ -440,7 +442,15 @@
                     </div>
 
                     <div class="tab-pane fade" id="v-pills-changelog" role="tabpanel">
-                        <h1 class="text-center mt-3">0.2.2</h1>
+                        <h1 class="text-center mt-3">0.2.3</h1>
+                        <p>
+                        <ul>
+                            <li>Makes code and theme choice persistent in local storage</li>
+                            <li>Adds Alt+Enter as a shortcut to run code</li>
+                            <li>Updates Cargo dependencies to patch vulnerabilities</li>
+                        </ul>
+                        </p>
+                        <h1 class="text-center mt-4">0.2.2</h1>
                         <p>
                         <ul>
                             <li><b>Major:</b> Allows numerical values to be expressed using a prefix of <code>0b</code>
@@ -489,6 +499,7 @@
                 <div id="output" class="flex-fill"></div>
             </div>
         </div>
+        <!--This site and code is dedicated to M in their trying times-->
     </div>
 
     <script>
