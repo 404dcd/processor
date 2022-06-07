@@ -1,6 +1,6 @@
 # QSIS-16
 
-Site is live! On https://qsis.404d.cf/
+Site is live! On [https://qsis.404d.cf/](https://qsis.404dcd.cc/)
 
 Got bored, made a custom ISA, emulator and assembler. Ideally simple enough to possibly be used as an educational resource?
 
